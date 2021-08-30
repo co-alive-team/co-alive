@@ -1,0 +1,22 @@
+spring:
+  profiles:
+    include: auth
+  datasource:
+    username: coalive
+    password: 1q2w3e4r
+    url: jdbc:postgresql://localhost:5432/coalive
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  redis:
+    host: localhost
+    connect-timeout: 3000
+
+auth:
+  access: DnmoRQ8TIEZOJXFtKyXd93hcafXiUb1R
+  expire-time: 600000
