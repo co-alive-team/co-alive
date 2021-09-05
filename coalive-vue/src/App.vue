@@ -1,19 +1,29 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <Navbar title="co-alive" />
+  <Section />
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <Card content="hellooo" username="sayho" time="9분 전"/>
+    </div>
   </div>
+  <Footer />
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Navbar from "./components/Navbar.vue";
+import Card from "./components/Card.vue";
+import Footer from "./components/Footer.vue";
+import Section from "./components/Section.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    Navbar,
+    Card,
+    Footer,
+    Section
+  },
+};
 </script>
 
 <style>
@@ -23,6 +33,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
