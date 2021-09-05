@@ -1,12 +1,18 @@
 package com.cateam.coalive.config.security.controller;
 
+import com.cateam.coalive.config.security.component.KakaoServiceProvider;
 import com.cateam.coalive.config.security.domain.KakaoOAuthRequest;
 import com.cateam.coalive.config.security.domain.KakaoProperty;
 import com.cateam.coalive.config.security.domain.KakaoResponse;
+import com.cateam.coalive.config.security.token.TokenProvider;
+import com.cateam.coalive.web.member.component.NickNameCreator;
+import com.cateam.coalive.web.member.domain.Member;
+import com.cateam.coalive.web.member.repository.MemberRepository;
+import com.cateam.coalive.web.member.type.AuthServer;
+import com.cateam.coalive.web.member.type.MemberType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,19 +25,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-@Slf4j
 @RestController
 @RequestMapping("/oauth2/code")
 @RequiredArgsConstructor
 public class OAuth2Controller {
     private final KakaoProperty kakaoProperty;
+    private final TokenProvider tokenProvider;
+    private final KakaoServiceProvider kakaoServiceProvider;
+    private final NickNameCreator nickNameCreator;
+    private final MemberRepository memberRepository;
 
 
     @GetMapping("/kakao")
-    public KakaoResponse loginKakao(@RequestParam String code) {
+    public String loginKakao(@RequestParam String code) {
         KakaoResponse kakaoResponse = requestToken(code);
+        String uid = kakaoServiceProvider.getKakaoUid(kakaoResponse.getAccessToken());
+        saveOrUpdate(uid);
 
-        return kakaoResponse;
+        return tokenProvider.createToken(kakaoResponse.getUid());
     }
 
     private KakaoResponse requestToken(String code) {
@@ -47,7 +58,11 @@ public class OAuth2Controller {
                 String.class
         );
 
-        return parseKakaoResponse(response.getBody());
+        KakaoResponse kakaoResponse = parseKakaoResponse(response.getBody());
+        String uid = kakaoServiceProvider.getKakaoUid(kakaoResponse.getAccessToken());
+        kakaoResponse.setUid(uid);
+
+        return kakaoResponse;
     }
 
     private MultiValueMap initMultiValueMap(String code) {
@@ -67,8 +82,19 @@ public class OAuth2Controller {
         try {
             return objectMapper.readValue(body, KakaoResponse.class);
         } catch (JsonProcessingException e) {
-            log.error("kakao 로그인 실패");
-            return null;
+            throw new IllegalStateException("카카오 로그인을 할 수 없습니다.");
         }
+    }
+
+    private Member saveOrUpdate(String uid) {
+        Member member = memberRepository.findByUid(uid)
+                .orElse(Member.builder()
+                        .uid(uid)
+                        .type(MemberType.USER)
+                        .name(nickNameCreator.createNickName())
+                        .authServer(AuthServer.KAKAO)
+                        .build());
+
+        return memberRepository.save(member);
     }
 }

@@ -1,6 +1,7 @@
 package com.cateam.coalive.config.security.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -11,6 +12,10 @@ public class KakaoResponse {
     private String access_token;
     private String token_type;
     private String refresh_token;
+
+    @Getter
+    @Setter
+    private String uid;
 
     private long expires_in;
     private long refresh_token_expires_in;
