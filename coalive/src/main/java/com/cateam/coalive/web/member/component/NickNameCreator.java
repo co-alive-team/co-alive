@@ -50,6 +50,6 @@ public class NickNameCreator {
 
     private boolean NotExistName(String name) {
         return memberRepository.findByName(name)
-                .isEmpty();
+                .isPresent();
     }
 }
